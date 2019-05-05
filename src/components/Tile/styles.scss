@@ -1,15 +1,21 @@
+@import "../../variables.scss";
+
 .tile {
   width: 2rem;
   height: 2rem;
   
-  background: darkgray;
+  background: $grey;
   border: 2px outset;
   
   cursor: pointer;
 
+  &:hover {
+    background: $grey-secondary;
+  }
+
   &:active {
+    background: $grey-secondary;
     border-style: inset;
-    background: grey;
   }
 
   &:focus {
