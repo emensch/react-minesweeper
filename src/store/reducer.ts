@@ -1,22 +1,22 @@
-import { ActionTypes, CLICK_TILE } from './actions';
+import { ActionTypes, CLICK_TILE } from "./actions";
 
 export interface IAppState {
   readonly boardDimensions: { x: number, y: number };
   readonly boardState: {
     readonly [x: number]: { 
-      readonly [y: number]: ITile 
+      readonly [y: number]: ITileState 
     }
   };
 }
 
-export interface ITile {
+export interface ITileState {
   adjacent: number;
   flagged: boolean;
   bomb: boolean;
 }
 
 const initialState: IAppState = {
-  boardDimensions: { x: 0, y: 0},
+  boardDimensions: { x: 10, y: 10 },
   boardState: {}
 };
 
