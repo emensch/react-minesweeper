@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import logo from './logo.svg';
 import './App.scss';
 import { IAppState } from './store/reducer';
 import { getCount } from './store/selectors';
