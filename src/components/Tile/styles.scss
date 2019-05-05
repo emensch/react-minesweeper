@@ -1,0 +1,18 @@
+.tile {
+  width: 2rem;
+  height: 2rem;
+  
+  background: darkgray;
+  border: 2px outset;
+  
+  cursor: pointer;
+
+  &:active {
+    border-style: inset;
+    background: grey;
+  }
+
+  &:focus {
+    outline: 0;
+  }
+}
