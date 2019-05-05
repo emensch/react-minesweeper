@@ -1,26 +1,37 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import logo from './logo.svg';
 import './App.scss';
+import { IAppState } from './store/reducer';
+import { getCount } from './store/selectors';
+import { increment } from './store/actions';
+import { Dispatch } from 'redux';
 
-const App: React.FC = () => {
+interface IAppStateProps {
+  count: number;
+}
+
+const mapStateToProps = (state: IAppState): IAppStateProps => ({
+  count: getCount(state)
+});
+
+interface IAppDispatch {
+  increment: typeof increment;
+}
+
+const mapDispatchToProps = (dispatch: Dispatch): IAppDispatch => ({
+  increment: () => dispatch(increment())
+});
+
+type AppProps = IAppStateProps & IAppDispatch;
+
+const App: React.FC<AppProps> = ({ count, increment }) => {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      { count }
+      <button onClick={increment}> + </button>
     </div>
   );
 }
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);
