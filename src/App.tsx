@@ -1,13 +1,12 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import './App.scss';
-import { IAppState } from './store/reducer';
-import { Dispatch } from 'redux';
+import GameBoard from './components/GameBoard';
 
 const App: React.FC = () => {
   return (
     <div className="App">
       <h2> Minesweeper </h2>
+      <GameBoard />
     </div>
   );
 }
