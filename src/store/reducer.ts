@@ -12,7 +12,7 @@ export interface IAppState {
 export interface ITileState {
   adjacent: number;
   flagged: boolean;
-  bomb: boolean;
+  mined: boolean;
 }
 
 const initialState: IAppState = {
@@ -29,7 +29,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
           ...state.boardState,
           [action.x]: {
             ...state.boardState[action.x],
-            [action.y]: { adjacent: 0, flagged: true, bomb: false }
+            [action.y]: { adjacent: 0, flagged: true, mined: false }
           }
         }
       }
