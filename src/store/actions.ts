@@ -1,15 +1,15 @@
+import { XYCoord } from "./models";
+
 export const CLICK_TILE = "CLICK_TILE";
 
 interface IClickTileAction {
   type: typeof CLICK_TILE;
-  x: number;
-  y: number;
+  coord: XYCoord
 }
 
-export const clickTile = (x: number, y: number): IClickTileAction => ({
+export const clickTile = (coord: XYCoord): IClickTileAction => ({
   type: CLICK_TILE,
-  x,
-  y
+  coord
 });
 
 export type ActionTypes = IClickTileAction;

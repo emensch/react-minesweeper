@@ -3,13 +3,14 @@ import { clickTile, ActionTypes } from '../../store/actions';
 import { getBoardDimensions } from '../../store/selectors';
 import { IAppState } from '../../store/reducer';
 import { Dispatch } from 'react';
+import { XYCoord } from '../../store/models';
 
 interface IStateProps {
-  dimensions: { x: number, y: number };
+  dimensions: { width: number, height: number };
 }
 
 interface IDispatchProps {
-  clickTile: (x: number, y: number) => void;
+  clickTile: (coord: XYCoord) => void;
 }
 
 export type GameBoardContainerProps = IStateProps & IDispatchProps;
@@ -19,7 +20,7 @@ const mapStateToProps = (state: IAppState): IStateProps => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<ActionTypes>): IDispatchProps => ({
-  clickTile: (x, y) => dispatch(clickTile(x, y))
+  clickTile: (coord) => dispatch(clickTile(coord))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps);

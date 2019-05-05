@@ -6,9 +6,9 @@ const GameBoard: React.FC<GameBoardContainerProps> = ({ dimensions, clickTile })
   const renderTiles = () => {
     let tiles = [];
 
-    for (let y = 0; y < dimensions.y; y++) {
-      for (let x = 0; x < dimensions.x; x++) {
-        tiles.push(<Tile key={`${x} ${y}`} x={x} y={y}/>)
+    for (let y = 0; y < dimensions.height; y++) {
+      for (let x = 0; x < dimensions.width; x++) {
+        tiles.push(<Tile key={`${x} ${y}`} coord={{ x, y }}/>)
       }
     }
 
@@ -16,10 +16,8 @@ const GameBoard: React.FC<GameBoardContainerProps> = ({ dimensions, clickTile })
   }
 
   const gameBoardStyle: React.CSSProperties = {
-    gridTemplateColumns: `repeat(${dimensions.x}, max-content)`
+    gridTemplateColumns: `repeat(${dimensions.width}, max-content)`
   };
-
-  console.log(gameBoardStyle);
 
   return (
     <div className="game-board" style={gameBoardStyle}>
