@@ -1,8 +1,9 @@
 import { connect } from "react-redux";
-import { ITileState, IAppState } from "../../store/reducer";
+import { IAppState } from "../../store/reducer";
 import { getTileState } from "../../store/selectors";
 import { Dispatch } from "react";
 import { clickTile, ActionTypes } from "../../store/actions";
+import { ITileState } from "../../services/gameBoardService";
 
 interface IStateProps {
   tileState: ITileState | null;
