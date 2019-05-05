@@ -2,35 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 import './App.scss';
 import { IAppState } from './store/reducer';
-import { getCount } from './store/selectors';
-import { increment } from './store/actions';
 import { Dispatch } from 'redux';
 
-interface IAppStateProps {
-  count: number;
-}
-
-const mapStateToProps = (state: IAppState): IAppStateProps => ({
-  count: getCount(state)
-});
-
-interface IAppDispatch {
-  increment: typeof increment;
-}
-
-const mapDispatchToProps = (dispatch: Dispatch): IAppDispatch => ({
-  increment: () => dispatch(increment())
-});
-
-type AppProps = IAppStateProps & IAppDispatch;
-
-const App: React.FC<AppProps> = ({ count, increment }) => {
+const App: React.FC = () => {
   return (
     <div className="App">
-      { count }
-      <button onClick={increment}> + </button>
+      <h2> Minesweeper </h2>
     </div>
   );
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;

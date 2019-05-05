@@ -1,3 +1,4 @@
-import { IAppState } from "./reducer";
+import { IAppState } from './reducer';
 
-export const getCount = (state: IAppState) => state.count;
+export const getBoardDimensions = (state: IAppState) => state.boardDimensions;
+export const getTile = (state: IAppState, x: number, y: number) => state.boardState[x][y];

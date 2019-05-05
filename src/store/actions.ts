@@ -1,11 +1,15 @@
-export const INCREMENT = 'INCREMENT';
+export const CLICK_TILE = 'CLICK_TILE';
 
 interface IIncrementAction {
-  type: typeof INCREMENT;
+  type: typeof CLICK_TILE;
+  x: number;
+  y: number;
 }
 
-export const increment = (): IIncrementAction => ({
-  type: INCREMENT
+export const clickTile = (x: number, y: number): IIncrementAction => ({
+  type: CLICK_TILE,
+  x,
+  y
 });
 
 export type ActionTypes = IIncrementAction;
