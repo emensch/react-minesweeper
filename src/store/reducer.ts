@@ -51,8 +51,8 @@ const boardFactory = (width: number, height: number, mines: number, initialTile:
   return newBoard;
 };
 
-const getRevealTiles = (board: IBoardState, width: number, height: number, coord: XYCoord) => {
-  const boardToMerge: IBoardState = {}; 
+const revealFromClick = (board: IBoardState, width: number, height: number, coord: XYCoord) => {
+  const reaveled: IBoardState = {}; 
   let coordsToCheck = [coord];
   let visited = new Set<string>();
 
@@ -77,7 +77,7 @@ const getRevealTiles = (board: IBoardState, width: number, height: number, coord
 
     // Create entry on "diff" board to be merged into final
     const mines = countMines(board, unrevealedAdjacents);
-    boardToMerge[coordToKey(coord)] = {
+    reaveled[coordToKey(coord)] = {
       revealed: true,
       adjacent: mines,
       flagged: false,
@@ -94,7 +94,10 @@ const getRevealTiles = (board: IBoardState, width: number, height: number, coord
       
   }  
   
-  return boardToMerge;
+  return {
+    ...board,
+    ...reaveled
+  };
 }
 
 const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
@@ -116,7 +119,7 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
   return adjacentCoords;
 }
 
-const getRevealedBoard = (board: IBoardState) => {
+const revealMines = (board: IBoardState) => {
   const revealedTiles: IBoardState = {};
 
   Object.keys(board).forEach(coordStr => {
@@ -182,7 +185,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         // On first click - generate empty board with no mine on clicked square
         const newBoard = boardFactory(state.width, state.height, state.mines, action.coord);
         // "click" tile and reveal
-        const revealed = getRevealTiles(newBoard, state.width, state.height, action.coord);
+        const revealed = revealFromClick(newBoard, state.width, state.height, action.coord);
 
         return {
           ...state,
@@ -199,7 +202,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         const tile = selectTile(state.boardState, action.coord);
 
         if (tile.mined) {
-          const revealedBoard = getRevealedBoard(state.boardState);
+          const revealedBoard = revealMines(state.boardState);
           return {
             ...state,
             gameStatus: GameStatus.Lost,
@@ -208,14 +211,10 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         }
 
         if (!tile.revealed)  {
-          const revealed = getRevealTiles(state.boardState, state.width, state.height, action.coord);
-
+          const revealedBoard = revealFromClick(state.boardState, state.width, state.height, action.coord);
           return {
             ...state,
-            boardState: {
-              ...state.boardState,
-              ...revealed
-            }
+            boardState: revealedBoard
           };
         }
       }
