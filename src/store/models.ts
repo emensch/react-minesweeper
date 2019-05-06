@@ -3,6 +3,7 @@ export interface IBoardState {
 }
 
 export interface ITileState {
+  revealed: boolean;
   adjacent: number | null;
   flagged: boolean;
   mined: boolean;

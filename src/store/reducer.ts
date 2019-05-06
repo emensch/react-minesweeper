@@ -2,22 +2,6 @@ import { ActionTypes, CLICK_TILE } from "./actions";
 import { GameStatus, IBoardState, XYCoord } from "./models";
 import { getTileState } from "./selectors";
 
-export interface IAppState {
-  readonly width: number;
-  readonly height: number;
-  readonly mines: number;
-  readonly gameStatus: GameStatus;
-  readonly boardState: IBoardState;
-}
-
-const initialState: IAppState = {
-  width: 10,
-  height: 10,
-  mines: 10,
-  gameStatus: GameStatus.Ready,
-  boardState: {}
-};
-
 export const coordToKey = (coord: XYCoord) => `${coord.x} ${coord.y}`;
 export const keyToCoord = (key: string): XYCoord => {
   const splitKey = key.split(" ").map(str => parseInt(str, 10));
@@ -42,7 +26,8 @@ const boardFactory = (width: number, height: number, mines: number, initialTile:
   for (let count = 0; count < mines; count++) {
     const coord = availableCoords.splice(Math.floor(Math.random()*availableCoords.length), 1)[0];
     newBoard[coordToKey(coord)] = {
-      adjacent: null,
+      revealed: false,
+      adjacent: 0,
       flagged: false,
       mined: true
     };
@@ -54,31 +39,44 @@ const boardFactory = (width: number, height: number, mines: number, initialTile:
 const getRevealTiles = (board: IBoardState, width: number, height: number, coord: XYCoord) => {
   const boardToMerge: IBoardState = {}; 
   let coordsToCheck = [coord];
+  let visited = new Set<string>();
 
+  // "Graph search" over board, revealing tiles that have no adjacent mines
   while (coordsToCheck.length > 0) {
     const coord = coordsToCheck.pop() as XYCoord;
 
-    const { diagonal, orthogonal } = getAdjacentCoords(width, height, coord);
-    const unrevealedDiagonal = diagonal.filter(coord => selectTile(boardToMerge, coord) === null);
-    const unrevealedOrthogonal = orthogonal.filter(coord => selectTile(boardToMerge, coord) === null);
-
-    const mines = countMines(board, [ ...unrevealedDiagonal, ...unrevealedOrthogonal ]);
-
-    if (mines > 0) {
-      boardToMerge[coordToKey(coord)] = {
-        adjacent: mines,
-        flagged: false,
-        mined: false
+    const unrevealedAdjacents = getAdjacentCoords(width, height, coord)
+    .filter(coord => {
+      // Do not visit this tile if it already has been
+      if (visited.has(coordToKey(coord))) {
+        return false;
       };
-    } else {
-      coordsToCheck.push(...unrevealedOrthogonal);
-      // coordsToCheck.push(...unrevealedDiagonal)
-      boardToMerge[coordToKey(coord)] = {
-        adjacent: 0,
-        flagged: false,
-        mined: false
-      };
+      // Likewise, do not visit if it is already revealed on the board
+      const selected = selectTile(board, coord);
+      if (selected && selected.revealed) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Create entry on "diff" board to be merged into final
+    const mines = countMines(board, unrevealedAdjacents);
+    boardToMerge[coordToKey(coord)] = {
+      revealed: true,
+      adjacent: mines,
+      flagged: false,
+      mined: false
+    };
+
+    // Mark this coordinate as visited
+    visited.add(coordToKey(coord));
+
+    // If this is an un-mined tile, enqueue it
+    if (mines === 0) {
+      coordsToCheck.unshift(...unrevealedAdjacents);
     }
+      
   }  
   
   return boardToMerge;
@@ -87,13 +85,7 @@ const getRevealTiles = (board: IBoardState, width: number, height: number, coord
 const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
   const { x, y } = coord;
 
-  let adjacentCoords: {
-    orthogonal: XYCoord[]
-    diagonal: XYCoord[]
-  } = { 
-    orthogonal: [],
-    diagonal: []
-  }
+  let adjacentCoords = [];
 
   for (let xIdx = Math.max(0, x - 1); xIdx <= Math.min(width - 1, x + 1); xIdx++) {
     for (let yIdx = Math.max(0, y - 1); yIdx <= Math.min(height - 1, y + 1); yIdx++) {
@@ -101,11 +93,7 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
         continue;
       }
 
-      if (xIdx === x || yIdx === y) {
-        adjacentCoords.orthogonal.push({ x: xIdx, y: yIdx })
-      } else {
-        adjacentCoords.diagonal.push({ x: xIdx, y: yIdx });
-      }   
+      adjacentCoords.push({ x: xIdx, y: yIdx });
     }
   }
 
@@ -115,7 +103,8 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
 const countMines = (board: IBoardState, coords: XYCoord[]) => (
   coords.reduce((count, coord) => {
     const tile = selectTile(board, coord);
-    return tile ? count + 1 : count;
+
+    return tile && tile.mined ? count + 1 : count;
   }, 0)
 );
 
@@ -125,17 +114,35 @@ const selectTile = (board: IBoardState, coord: XYCoord) => {
   return board[key] ? board[key] : null;
 }
 
+export interface IAppState {
+  readonly width: number;
+  readonly height: number;
+  readonly mines: number;
+  readonly gameStatus: GameStatus;
+  readonly boardState: IBoardState;
+}
+
+const initialState: IAppState = {
+  width: 5,
+  height: 5,
+  mines: 3,
+  gameStatus: GameStatus.Ready,
+  boardState: {}
+};
+
 export const rootReducer = (state = initialState, action: ActionTypes) => {
   switch (action.type) {
     case CLICK_TILE:
       if (state.gameStatus === GameStatus.Ready) {
+        // On first click - generate empty board with no mine on clicked square
         const newBoard = boardFactory(state.width, state.height, state.mines, action.coord);
-        const initialBoard = getRevealTiles(newBoard, state.width, state.height, action.coord);
+        // "click" tile and reveal
+        const revealed = getRevealTiles(newBoard, state.width, state.height, action.coord);
 
         return {
           ...state,
           gameStatus: GameStatus.Started,
-          boardState: initialBoard
+          boardState: { ...newBoard, ...revealed }
         };
       }
 
@@ -143,13 +150,13 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         const tile = getTileState(state, action.coord);
 
         if (!tile)  {
-          const updated = getRevealTiles(state.boardState, state.width, state.height, action.coord);
+          const revealed = getRevealTiles(state.boardState, state.width, state.height, action.coord);
 
           return {
             ...state,
             boardState: {
               ...state.boardState,
-              ...updated
+              ...revealed
             }
           };
         }

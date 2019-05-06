@@ -8,13 +8,7 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
     onClick();
   }
 
-  const isRevealed = () => {
-    if (!tileState) {
-      return false;
-    }
-
-    return tileState.adjacent !== null && tileState.adjacent >= 0;
-  }
+  const isRevealed = () => tileState ? tileState.revealed : false;
 
   const renderInnerTile = () => {
     if (!tileState) {
