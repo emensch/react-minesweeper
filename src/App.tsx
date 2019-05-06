@@ -5,7 +5,6 @@ import GameBoard from './components/GameBoard';
 const App: React.FC = () => {
   return (
     <div className="App">
-      <h2> Minesweeper </h2>
       <GameBoard />
     </div>
   );
