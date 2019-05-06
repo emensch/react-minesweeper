@@ -22,6 +22,10 @@
     border: 1px solid $grey-secondary;
   }
 
+  &.lost {
+    background: $red;
+  }
+
   &:hover:not(.revealed) {
     background: $grey-secondary;
   }

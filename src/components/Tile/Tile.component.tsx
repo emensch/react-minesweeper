@@ -16,6 +16,7 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
   }
 
   const isRevealed = () => tileState ? tileState.revealed : false;
+  const isLost = () => tileState && typeof tileState.lost !== undefined ? tileState.lost === true : false;
 
   const renderInnerTile = () => {
     if (!tileState) {
@@ -32,7 +33,7 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
   return (
     <button 
       disabled={isRevealed()}
-      className={classNames("tile", { "revealed": isRevealed() })}
+      className={classNames("tile", { "revealed": isRevealed(), "lost": isLost() })}
       onClick={onClickHandler} 
       onContextMenu={onContextHandler}
     >
