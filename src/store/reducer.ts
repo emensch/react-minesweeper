@@ -147,6 +147,21 @@ const countMines = (board: IBoardState, coords: XYCoord[]) => (
   }, 0)
 );
 
+// Victory occurs when the only unvisited tiles are mines
+const checkVictory = (board: IBoardState, width: number, height: number) => {
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+      const tile = selectTile(board, { x, y });
+
+      if (!tile.revealed && !tile.mined) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 export interface IAppState {
   readonly width: number;
   readonly height: number;
@@ -156,9 +171,9 @@ export interface IAppState {
 }
 
 const initialState: IAppState = {
-  width: 10,
-  height: 10,
-  mines: 20,
+  width: 4,
+  height: 4,
+  mines: 2,
   gameStatus: GameStatus.Ready,
   boardState: {}
 };
@@ -214,6 +229,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
           const revealedBoard = revealFromClick(state.boardState, state.width, state.height, action.coord);
           return {
             ...state,
+            gameStatus: checkVictory(revealedBoard, state.width, state.height) ? GameStatus.Won : state.gameStatus,
             boardState: revealedBoard
           };
         }
