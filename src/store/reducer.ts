@@ -1,4 +1,4 @@
-import { ActionTypes, CLICK_TILE } from "./actions";
+import { ActionTypes, CLICK_TILE, RESET_GAME } from "./actions";
 import { GameStatus, IBoardState, XYCoord, ClickType, ITileState } from "./models";
 
 export interface IAppState {
@@ -196,6 +196,9 @@ const initialState: IAppState = {
 
 export const rootReducer = (state = initialState, action: ActionTypes) => {
   switch (action.type) {
+    case RESET_GAME: 
+      return initialState;
+
     case CLICK_TILE:
       if (state.gameStatus === GameStatus.Ready) {
         // On first click - generate empty board with no mine on clicked square
@@ -266,6 +269,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
       }
 
       return state;
+      
     default:
       return state;
   }
