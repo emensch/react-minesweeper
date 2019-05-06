@@ -204,7 +204,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
 
         return {
           ...state,
-          gameStatus: GameStatus.Started,
+          gameStatus: checkVictory(revealed, state.width, state.height) ? GameStatus.Won : GameStatus.Started,
           boardState: { 
             ...state.boardState,
             ...newBoard, 
