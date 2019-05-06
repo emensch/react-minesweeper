@@ -1,8 +1,27 @@
+@import "./variables.scss";
+
 .App {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 
   height: 100vh;
   width: 100vw;
+}
+
+.game-button {
+  background: $grey;
+  margin-top: 2rem;
+  font-size: 1rem;
+
+  border: 2px outset;
+
+  &:hover {
+    background: $grey-secondary;
+  }
+
+  &:active {
+    border-style: inset;
+  }
 }
