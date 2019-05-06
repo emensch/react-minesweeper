@@ -1,6 +1,5 @@
 import { ActionTypes, CLICK_TILE } from "./actions";
-import { GameStatus, IBoardState, XYCoord } from "./models";
-import { getTileState } from "./selectors";
+import { GameStatus, IBoardState, XYCoord, ClickType } from "./models";
 
 export const coordToKey = (coord: XYCoord) => `${coord.x} ${coord.y}`;
 export const keyToCoord = (key: string): XYCoord => {
@@ -56,9 +55,9 @@ const getRevealTiles = (board: IBoardState, width: number, height: number, coord
       if (visited.has(coordToKey(coord))) {
         return false;
       };
-      // Likewise, do not visit if it is already revealed on the board
+      // Likewise, do not visit if it is already revealed or flagged on the board
       const selected = selectTile(board, coord);
-      if (selected && selected.revealed) {
+      if (selected.revealed || selected.flagged) {
         return false;
       }
 
@@ -110,14 +109,19 @@ const countMines = (board: IBoardState, coords: XYCoord[]) => (
   coords.reduce((count, coord) => {
     const tile = selectTile(board, coord);
 
-    return tile && tile.mined ? count + 1 : count;
+    return tile.mined ? count + 1 : count;
   }, 0)
 );
 
 const selectTile = (board: IBoardState, coord: XYCoord) => {
   const key = coordToKey(coord);
 
-  return board[key] ? board[key] : null;
+  return board[key] ? board[key] : {
+    revealed: false,
+    adjacent: null,
+    flagged: false,
+    mined: false
+  };
 }
 
 export interface IAppState {
@@ -139,6 +143,21 @@ const initialState: IAppState = {
 export const rootReducer = (state = initialState, action: ActionTypes) => {
   switch (action.type) {
     case CLICK_TILE:
+      if (action.clickType === ClickType.Right) {
+        const selected = selectTile(state.boardState, action.coord);
+
+        return {
+          ...state,
+          boardState: {
+            ...state.boardState,
+            [coordToKey(action.coord)]: {
+              ...selected,
+              flagged: !selected.flagged
+            }
+          }
+        }
+      }
+
       if (state.gameStatus === GameStatus.Ready) {
         // On first click - generate empty board with no mine on clicked square
         const newBoard = boardFactory(state.width, state.height, state.mines, action.coord);
@@ -148,14 +167,18 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         return {
           ...state,
           gameStatus: GameStatus.Started,
-          boardState: { ...newBoard, ...revealed }
+          boardState: { 
+            ...state.boardState,
+            ...newBoard, 
+            ...revealed
+          }
         };
       }
 
       if (state.gameStatus === GameStatus.Started) {
-        const tile = getTileState(state, action.coord);
+        const tile = selectTile(state.boardState, action.coord);
 
-        if (!tile)  {
+        if (!tile.revealed)  {
           const revealed = getRevealTiles(state.boardState, state.width, state.height, action.coord);
 
           return {
