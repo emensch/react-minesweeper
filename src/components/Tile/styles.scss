@@ -6,6 +6,13 @@
   
   background: $grey;
   border: 2px outset;
+
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:not(:disabled) {
     cursor: pointer;
@@ -27,4 +34,8 @@
   &:focus {
     outline: 0;
   }
+}
+
+.tile-icon {
+  width: 1.2rem;
 }

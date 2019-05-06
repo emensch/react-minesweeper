@@ -21,11 +21,11 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
     if (!tileState) {
       return;
     } if (tileState.revealed && tileState.mined) {
-      return "X";
+      return <img className="tile-icon" src="/mine.png" />;
     } else if (tileState.flagged) {
-      return "F";
+      return <img className="tile-icon" src="/flag.png" />;
     } else if (tileState.adjacent) {
-      return <MineNumber number={tileState.adjacent} />
+      return <MineNumber number={tileState.adjacent} />;
     }
   }
 
