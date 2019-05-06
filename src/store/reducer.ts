@@ -1,5 +1,5 @@
 import { ActionTypes, CLICK_TILE } from "./actions";
-import { GameStatus, IBoardState, XYCoord, ClickType } from "./models";
+import { GameStatus, IBoardState, XYCoord, ClickType, ITileState } from "./models";
 
 export const coordToKey = (coord: XYCoord) => `${coord.x} ${coord.y}`;
 export const keyToCoord = (key: string): XYCoord => {
@@ -119,23 +119,22 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
   return adjacentCoords;
 }
 
-const revealMines = (board: IBoardState) => {
-  const revealedTiles: IBoardState = {};
+const mapBoard = (board: IBoardState, mapFn: (tile: ITileState) => ITileState | null) => {
+  const modifiedTiles: IBoardState = {};
 
   Object.keys(board).forEach(coordStr => {
     const tile = selectTile(board, coordStr);
 
-    if (tile.mined) {
-      revealedTiles[coordStr] = {
-        ...tile,
-        revealed: true
-      }
+    const returned = mapFn(tile);
+
+    if (returned) {
+      modifiedTiles[coordStr] = returned;
     }
   });
 
   return {
     ...board,
-    ...revealedTiles
+    ...modifiedTiles
   }
 }
 
@@ -217,7 +216,17 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         const tile = selectTile(state.boardState, action.coord);
 
         if (tile.mined) {
-          const revealedBoard = revealMines(state.boardState);
+          const revealedBoard = mapBoard(state.boardState, (tile) => {
+            if (tile.mined) {
+              return {
+                ...tile,
+                revealed: true
+              }
+            }
+
+            return null;
+          });
+
           return {
             ...state,
             gameStatus: GameStatus.Lost,
