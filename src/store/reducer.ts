@@ -187,9 +187,9 @@ const getVictoryState = (state: IAppState, newBoard: IBoardState) => {
 }
 
 const initialState: IAppState = {
-  width: 4,
-  height: 4,
-  mines: 2,
+  width: 10,
+  height: 10,
+  mines: 15,
   gameStatus: GameStatus.Ready,
   boardState: {}
 };
