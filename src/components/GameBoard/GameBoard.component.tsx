@@ -2,26 +2,8 @@ import React from "react";
 import { GameBoardContainerProps } from "./GameBoard.container";
 import Tile from "../Tile";
 
-class GameBoard extends React.Component<GameBoardContainerProps> {
-  gameBoardRef = React.createRef<HTMLDivElement>();
-
-  componentDidMount() {
-    const containerDiv = this.gameBoardRef.current as HTMLDivElement;
-    containerDiv.addEventListener("contextmenu", this.preventDefault);
-  }
-
-  componentWillUnmount() {
-    const containerDiv = this.gameBoardRef.current as HTMLDivElement;
-    containerDiv.removeEventListener("contextmenu", this.preventDefault);
-  }
-
-  preventDefault = (e: MouseEvent) => {
-    e.preventDefault();
-  }
-
-  renderTiles = () => {
-    const { dimensions } = this.props;
-    
+const GameBoard: React.FC<GameBoardContainerProps> = ({ dimensions }) => {
+  const renderTiles = () => {
     let tiles = [];
 
     for (let y = 0; y < dimensions.height; y++) {
@@ -33,20 +15,18 @@ class GameBoard extends React.Component<GameBoardContainerProps> {
     return tiles;
   }
 
-  getGameBoardStyle = (): React.CSSProperties => ({
-    gridTemplateColumns: `repeat(${this.props.dimensions.width}, max-content)`
-  });
+  const gameBoardStyle = {
+    gridTemplateColumns: `repeat(${dimensions.width}, max-content)`
+  };
 
-  render() {
-    return (
-      <div className="game-board-container">
-        <div className="game-board" style={this.getGameBoardStyle()} ref={this.gameBoardRef}>
-          { this.renderTiles() }
-        </div>
+  return (
+    <div className="game-board-container">
+      <div className="game-board" style={gameBoardStyle}>
+        { renderTiles() }
       </div>
-    )
-  }
-}
+    </div>
+  )
+};
 
 
 export default GameBoard;
