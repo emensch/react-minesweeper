@@ -197,21 +197,6 @@ const initialState: IAppState = {
 export const rootReducer = (state = initialState, action: ActionTypes) => {
   switch (action.type) {
     case CLICK_TILE:
-      if (action.clickType === ClickType.Right) {
-        const selected = selectTile(state.boardState, action.coord);
-
-        return {
-          ...state,
-          boardState: {
-            ...state.boardState,
-            [coordToKey(action.coord)]: {
-              ...selected,
-              flagged: !selected.flagged
-            }
-          }
-        }
-      }
-
       if (state.gameStatus === GameStatus.Ready) {
         // On first click - generate empty board with no mine on clicked square
         const newBoard = boardFactory(state.width, state.height, state.mines, action.coord);
@@ -235,6 +220,19 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
 
       if (state.gameStatus === GameStatus.Started) {
         const tile = selectTile(state.boardState, action.coord);
+
+        if (action.clickType === ClickType.Right) {
+          return {
+            ...state,
+            boardState: {
+              ...state.boardState,
+              [coordToKey(action.coord)]: {
+                ...tile,
+                flagged: !tile.flagged
+              }
+            }
+          }
+        }
 
         if (tile.mined) {
           const updatedBoard = mapBoard(state.boardState, (tile) => {
