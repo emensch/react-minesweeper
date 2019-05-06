@@ -59,8 +59,48 @@ const boardFactory = (width: number, height: number, mines: number, initialTile:
   return newBoard;
 };
 
+const boardMap = (board: IBoardState, mapFn: (tile: ITileState) => ITileState | undefined) => {
+  const modifiedTiles: IBoardState = {};
+
+  Object.keys(board).forEach(coordStr => {
+    const tile = selectTile(board, coordStr);
+
+    const returned = mapFn(tile);
+
+    if (returned) {
+      modifiedTiles[coordStr] = returned;
+    }
+  });
+
+  return {
+    ...board,
+    ...modifiedTiles
+  }
+}
+
+const updateTile = (board: IBoardState, coord: XYCoord, tileUpdate: Partial<ITileState> | ((tile: ITileState) => Partial<ITileState>) ) => {
+  const selected = selectTile(board, coord);
+
+  let toMerge = {};
+  if (typeof tileUpdate === "function") {
+    toMerge = tileUpdate(selected);
+  } else {
+    toMerge = tileUpdate;
+  }
+
+  const mergedTile = {
+    ...selected,
+    ...toMerge
+  };
+
+  return {
+    ...board,
+    [coordToKey(coord)]: mergedTile
+  }
+}
+
 const revealFromClick = (board: IBoardState, width: number, height: number, coord: XYCoord) => {
-  const reaveled: IBoardState = {}; 
+  const revealed: IBoardState = {}; 
   let coordsToCheck = [coord];
   let visited = new Set<string>();
 
@@ -85,7 +125,7 @@ const revealFromClick = (board: IBoardState, width: number, height: number, coor
 
     // Create entry on "diff" board to be merged into final
     const mines = countMines(board, unrevealedAdjacents);
-    reaveled[coordToKey(coord)] = {
+    revealed[coordToKey(coord)] = {
       revealed: true,
       adjacent: mines,
       flagged: false,
@@ -104,7 +144,7 @@ const revealFromClick = (board: IBoardState, width: number, height: number, coor
   
   return {
     ...board,
-    ...reaveled
+    ...revealed
   };
 }
 
@@ -125,39 +165,6 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
   }
 
   return adjacentCoords;
-}
-
-const mapBoard = (board: IBoardState, mapFn: (tile: ITileState) => ITileState | undefined) => {
-  const modifiedTiles: IBoardState = {};
-
-  Object.keys(board).forEach(coordStr => {
-    const tile = selectTile(board, coordStr);
-
-    const returned = mapFn(tile);
-
-    if (returned) {
-      modifiedTiles[coordStr] = returned;
-    }
-  });
-
-  return {
-    ...board,
-    ...modifiedTiles
-  }
-}
-
-const updateTile = (board: IBoardState, coord: XYCoord, tileUpdate: Partial<ITileState>) => {
-  const selected = selectTile(board, coord);
-
-  const mergedTile = {
-    ...selected,
-    ...tileUpdate
-  };
-
-  return {
-    ...board,
-    [coordToKey(coord)]: mergedTile
-  }
 }
 
 const countMines = (board: IBoardState, coords: XYCoord[]) => (
@@ -184,7 +191,7 @@ const checkVictory = (board: IBoardState, width: number, height: number) => {
 }
 
 const getVictoryState = (state: IAppState, newBoard: IBoardState) => {
-  const updatedBoard = mapBoard(newBoard, (tile) => {
+  const updatedBoard = boardMap(newBoard, (tile) => {
     if (tile.mined) {
       return {
         ...tile,
@@ -236,23 +243,18 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
       }
 
       if (state.gameStatus === GameStatus.Started) {
-        const tile = selectTile(state.boardState, action.coord);
+        const updatedBoard = updateTile(state.boardState, action.coord, (tile) => ({ flagged: !tile.flagged }) )
 
         if (action.clickType === ClickType.Right) {
           return {
             ...state,
-            boardState: {
-              ...state.boardState,
-              [coordToKey(action.coord)]: {
-                ...tile,
-                flagged: !tile.flagged
-              }
-            }
-          }
+            boardState: updatedBoard
+          };
         }
 
+        const tile = selectTile(state.boardState, action.coord);
         if (tile.mined) {
-          const reavealedBoard = mapBoard(state.boardState, (tile) => {
+          const revealed = boardMap(state.boardState, (tile) => {
             if (tile.mined) {
               return {
                 ...tile,
@@ -261,7 +263,7 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
             }
           });
 
-          const updatedBoard = updateTile(reavealedBoard, action.coord, {
+          const updatedBoard = updateTile(revealed, action.coord, {
             lost: true
           });
 
