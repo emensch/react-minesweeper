@@ -24,6 +24,11 @@ const boardFactory = (width: number, height: number, mines: number, initialTile:
 
   // Randomly select coordinates for mine placement
   for (let count = 0; count < mines; count++) {
+    // Break if # mines exceeds number of available tiles
+    if (availableCoords.length === 0) {
+      break;
+    }
+
     const coord = availableCoords.splice(Math.floor(Math.random()*availableCoords.length), 1)[0];
     newBoard[coordToKey(coord)] = {
       revealed: false,
@@ -89,6 +94,7 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
 
   for (let xIdx = Math.max(0, x - 1); xIdx <= Math.min(width - 1, x + 1); xIdx++) {
     for (let yIdx = Math.max(0, y - 1); yIdx <= Math.min(height - 1, y + 1); yIdx++) {
+      // Skip middle
       if (xIdx === x && yIdx === y) {
         continue;
       }
@@ -123,9 +129,9 @@ export interface IAppState {
 }
 
 const initialState: IAppState = {
-  width: 5,
-  height: 5,
-  mines: 3,
+  width: 10,
+  height: 10,
+  mines: 20,
   gameStatus: GameStatus.Ready,
   boardState: {}
 };
