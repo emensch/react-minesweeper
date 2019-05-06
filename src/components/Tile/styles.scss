@@ -7,13 +7,19 @@
   background: $grey;
   border: 2px outset;
   
-  cursor: pointer;
+  &:not(:disabled) {
+    cursor: pointer;
+  }
 
-  &:hover {
+  &.revealed {
+    border: 1px solid $grey-secondary;
+  }
+
+  &:hover:not(.revealed) {
     background: $grey-secondary;
   }
 
-  &:active {
+  &:active:not(.revealed) {
     background: $grey-secondary;
     border-style: inset;
   }

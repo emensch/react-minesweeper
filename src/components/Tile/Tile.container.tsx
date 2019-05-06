@@ -3,8 +3,7 @@ import { IAppState } from "../../store/reducer";
 import { getTileState } from "../../store/selectors";
 import { Dispatch } from "react";
 import { clickTile, ActionTypes } from "../../store/actions";
-import { ITileState } from "../../services/gameBoardService";
-import { XYCoord } from "../../store/models";
+import { XYCoord, ITileState } from "../../store/models";
 
 interface IStateProps {
   tileState: ITileState | null;
