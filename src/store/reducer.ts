@@ -107,39 +107,41 @@ const revealFromClick = (board: IBoardState, width: number, height: number, coor
   // "Graph search" over board, revealing tiles that have no adjacent mines
   while (coordsToCheck.length > 0) {
     const coord = coordsToCheck.pop() as XYCoord;
+    const selected = selectTile(board, coord);
 
-    const unrevealedAdjacents = getAdjacentCoords(width, height, coord)
-    .filter(coord => {
+    const adjacents = getAdjacentCoords(width, height, coord)
+
+
+    // Create entry on "diff" board to be merged into final
+    const mines = countMines(board, adjacents);
+    revealed[coordToKey(coord)] = {
+      revealed: true,
+      adjacent: mines,
+      flagged: selected.flagged,
+      mined: selected.mined
+    };
+
+    const filteredAdjacents = adjacents.filter(coord => {
       // Do not visit this tile if it already has been
       if (visited.has(coordToKey(coord))) {
         return false;
       };
-      // Likewise, do not visit if it is already revealed or flagged on the board
+      // Likewise, do not visit if it is already revealed or has mines
       const selected = selectTile(board, coord);
-      if (selected.revealed || selected.flagged) {
+      if (selected.revealed) {
         return false;
       }
-
+      
       return true;
     });
-
-    // Create entry on "diff" board to be merged into final
-    const mines = countMines(board, unrevealedAdjacents);
-    revealed[coordToKey(coord)] = {
-      revealed: true,
-      adjacent: mines,
-      flagged: false,
-      mined: false
-    };
 
     // Mark this coordinate as visited
     visited.add(coordToKey(coord));
 
-    // If this is an un-mined tile, enqueue it
+    // If this is tile does not have a mine, enqueue it for visitation!
     if (mines === 0) {
-      coordsToCheck.unshift(...unrevealedAdjacents);
+      coordsToCheck.unshift(...filteredAdjacents);
     }
-      
   }  
   
   return {
