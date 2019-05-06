@@ -7,6 +7,17 @@ export const keyToCoord = (key: string): XYCoord => {
   return { x: splitKey[0], y: splitKey[0] };
 }
 
+const selectTile = (board: IBoardState, coord: XYCoord | string) => {
+  const key = typeof coord === "string" ? coord : coordToKey(coord);
+
+  return board[key] ? board[key] : {
+    revealed: false,
+    adjacent: null,
+    flagged: false,
+    mined: false
+  };
+}
+
 const boardFactory = (width: number, height: number, mines: number, initialTile: XYCoord ) => {
   let availableCoords: XYCoord[] = [];
 
@@ -105,6 +116,26 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
   return adjacentCoords;
 }
 
+const getRevealedBoard = (board: IBoardState) => {
+  const revealedTiles: IBoardState = {};
+
+  Object.keys(board).forEach(coordStr => {
+    const tile = selectTile(board, coordStr);
+
+    if (tile.mined) {
+      revealedTiles[coordStr] = {
+        ...tile,
+        revealed: true
+      }
+    }
+  });
+
+  return {
+    ...board,
+    ...revealedTiles
+  }
+}
+
 const countMines = (board: IBoardState, coords: XYCoord[]) => (
   coords.reduce((count, coord) => {
     const tile = selectTile(board, coord);
@@ -112,17 +143,6 @@ const countMines = (board: IBoardState, coords: XYCoord[]) => (
     return tile.mined ? count + 1 : count;
   }, 0)
 );
-
-const selectTile = (board: IBoardState, coord: XYCoord) => {
-  const key = coordToKey(coord);
-
-  return board[key] ? board[key] : {
-    revealed: false,
-    adjacent: null,
-    flagged: false,
-    mined: false
-  };
-}
 
 export interface IAppState {
   readonly width: number;
@@ -178,6 +198,15 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
       if (state.gameStatus === GameStatus.Started) {
         const tile = selectTile(state.boardState, action.coord);
 
+        if (tile.mined) {
+          const revealedBoard = getRevealedBoard(state.boardState);
+          return {
+            ...state,
+            gameStatus: GameStatus.Lost,
+            boardState: revealedBoard
+          };
+        }
+
         if (!tile.revealed)  {
           const revealed = getRevealTiles(state.boardState, state.width, state.height, action.coord);
 
@@ -187,13 +216,6 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
               ...state.boardState,
               ...revealed
             }
-          };
-        }
-
-        if (tile.mined) {
-          return {
-            ...state,
-            gameStatus: GameStatus.Lost
           };
         }
       }
