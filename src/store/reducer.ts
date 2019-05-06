@@ -146,6 +146,20 @@ const mapBoard = (board: IBoardState, mapFn: (tile: ITileState) => ITileState | 
   }
 }
 
+const updateTile = (board: IBoardState, coord: XYCoord, tileUpdate: Partial<ITileState>) => {
+  const selected = selectTile(board, coord);
+
+  const mergedTile = {
+    ...selected,
+    ...tileUpdate
+  };
+
+  return {
+    ...board,
+    [coordToKey(coord)]: mergedTile
+  }
+}
+
 const countMines = (board: IBoardState, coords: XYCoord[]) => (
   coords.reduce((count, coord) => {
     const tile = selectTile(board, coord);
@@ -238,13 +252,17 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         }
 
         if (tile.mined) {
-          const updatedBoard = mapBoard(state.boardState, (tile) => {
+          const reavealedBoard = mapBoard(state.boardState, (tile) => {
             if (tile.mined) {
               return {
                 ...tile,
                 revealed: true
               }
             }
+          });
+
+          const updatedBoard = updateTile(reavealedBoard, action.coord, {
+            lost: true
           });
 
           return {

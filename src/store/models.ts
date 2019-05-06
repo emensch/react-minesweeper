@@ -7,6 +7,7 @@ export interface ITileState {
   adjacent: number | null;
   flagged: boolean;
   mined: boolean;
+  lost?: boolean;
 }
 
 export enum GameStatus {
