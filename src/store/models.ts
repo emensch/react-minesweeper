@@ -3,7 +3,7 @@ export interface IBoardState {
 }
 
 export interface ITileState {
-  adjacent: number | undefined;
+  adjacent: number | null;
   flagged: boolean;
   mined: boolean;
 }
