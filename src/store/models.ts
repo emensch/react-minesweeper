@@ -16,4 +16,9 @@ export enum GameStatus {
   Lost
 };
 
+export enum ClickType {
+  Left,
+  Right
+}
+
 export type XYCoord = { x: number, y: number };

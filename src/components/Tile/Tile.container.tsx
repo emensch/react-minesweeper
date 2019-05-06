@@ -3,14 +3,14 @@ import { IAppState } from "../../store/reducer";
 import { getTileState } from "../../store/selectors";
 import { Dispatch } from "react";
 import { clickTile, ActionTypes } from "../../store/actions";
-import { XYCoord, ITileState } from "../../store/models";
+import { XYCoord, ITileState, ClickType } from "../../store/models";
 
 interface IStateProps {
   tileState: ITileState | null;
 }
 
 interface IDispatchProps {
-  onClick: () => void;
+  onClick: (clickType: ClickType) => void;
 }
 
 interface IOwnProps {
@@ -24,7 +24,7 @@ const mapStateToProps = (state: IAppState, ownProps: IOwnProps): IStateProps => 
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<ActionTypes>, ownProps: IOwnProps): IDispatchProps => ({
-  onClick: () => dispatch(clickTile(ownProps.coord))
+  onClick: (clickType) => dispatch(clickTile(ownProps.coord, clickType))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps);
