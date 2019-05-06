@@ -21,9 +21,9 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
     if (!tileState) {
       return;
     } if (tileState.revealed && tileState.mined) {
-      return <img className="tile-icon" src="/mine.png" />;
+      return <img className="tile-icon" src="/mine.png" alt="mine" />;
     } else if (tileState.flagged) {
-      return <img className="tile-icon" src="/flag.png" />;
+      return <img className="tile-icon" src="/flag.png" alt="flag" />;
     } else if (tileState.adjacent) {
       return <MineNumber number={tileState.adjacent} />;
     }
