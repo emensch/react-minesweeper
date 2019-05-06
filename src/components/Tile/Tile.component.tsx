@@ -2,6 +2,7 @@ import React from "react";
 import { TileContainerProps } from "./Tile.container";
 import classNames from "classnames";
 import { ClickType } from "../../store/models";
+import { MineNumber } from "../MineNumber";
 
 const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
   const onClickHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -24,7 +25,7 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
     } else if (tileState.flagged) {
       return "F";
     } else if (tileState.adjacent) {
-      return tileState.adjacent;
+      return <MineNumber number={tileState.adjacent} />
     }
   }
 
