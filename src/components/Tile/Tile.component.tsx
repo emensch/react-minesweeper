@@ -19,7 +19,7 @@ const Tile: React.FC<TileContainerProps> = ({ tileState, onClick }) => {
   const renderInnerTile = () => {
     if (!tileState) {
       return;
-    } if (tileState.mined) {
+    } if (tileState.revealed && tileState.mined) {
       return "X";
     } else if (tileState.flagged) {
       return "F";

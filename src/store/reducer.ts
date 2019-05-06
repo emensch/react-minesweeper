@@ -1,6 +1,14 @@
 import { ActionTypes, CLICK_TILE } from "./actions";
 import { GameStatus, IBoardState, XYCoord, ClickType, ITileState } from "./models";
 
+export interface IAppState {
+  readonly width: number;
+  readonly height: number;
+  readonly mines: number;
+  readonly gameStatus: GameStatus;
+  readonly boardState: IBoardState;
+}
+
 export const coordToKey = (coord: XYCoord) => `${coord.x} ${coord.y}`;
 export const keyToCoord = (key: string): XYCoord => {
   const splitKey = key.split(" ").map(str => parseInt(str, 10));
@@ -119,7 +127,7 @@ const getAdjacentCoords = (width: number, height: number, coord: XYCoord) => {
   return adjacentCoords;
 }
 
-const mapBoard = (board: IBoardState, mapFn: (tile: ITileState) => ITileState | null) => {
+const mapBoard = (board: IBoardState, mapFn: (tile: ITileState) => ITileState | undefined) => {
   const modifiedTiles: IBoardState = {};
 
   Object.keys(board).forEach(coordStr => {
@@ -161,12 +169,21 @@ const checkVictory = (board: IBoardState, width: number, height: number) => {
   return true;
 }
 
-export interface IAppState {
-  readonly width: number;
-  readonly height: number;
-  readonly mines: number;
-  readonly gameStatus: GameStatus;
-  readonly boardState: IBoardState;
+const getVictoryState = (state: IAppState, newBoard: IBoardState) => {
+  const updatedBoard = mapBoard(newBoard, (tile) => {
+    if (tile.mined) {
+      return {
+        ...tile,
+        flagged: true
+      }
+    }
+  });
+
+  return {
+    ...state,
+    gameStatus: GameStatus.Won,
+    boardState: updatedBoard
+  }
 }
 
 const initialState: IAppState = {
@@ -199,15 +216,19 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         // On first click - generate empty board with no mine on clicked square
         const newBoard = boardFactory(state.width, state.height, state.mines, action.coord);
         // "click" tile and reveal
-        const revealed = revealFromClick(newBoard, state.width, state.height, action.coord);
+        const revealedBoard = revealFromClick(newBoard, state.width, state.height, action.coord);
+
+        if (checkVictory(revealedBoard, state.width, state.height)) {
+          return getVictoryState(state, revealedBoard);
+        }
 
         return {
           ...state,
-          gameStatus: checkVictory(revealed, state.width, state.height) ? GameStatus.Won : GameStatus.Started,
+          gameStatus: GameStatus.Started,
           boardState: { 
             ...state.boardState,
             ...newBoard, 
-            ...revealed
+            ...revealedBoard
           }
         };
       }
@@ -216,29 +237,31 @@ export const rootReducer = (state = initialState, action: ActionTypes) => {
         const tile = selectTile(state.boardState, action.coord);
 
         if (tile.mined) {
-          const revealedBoard = mapBoard(state.boardState, (tile) => {
+          const updatedBoard = mapBoard(state.boardState, (tile) => {
             if (tile.mined) {
               return {
                 ...tile,
                 revealed: true
               }
             }
-
-            return null;
           });
 
           return {
             ...state,
             gameStatus: GameStatus.Lost,
-            boardState: revealedBoard
+            boardState: updatedBoard
           };
         }
 
         if (!tile.revealed)  {
           const revealedBoard = revealFromClick(state.boardState, state.width, state.height, action.coord);
+
+          if (checkVictory(revealedBoard, state.width, state.height)) {
+            return getVictoryState(state, revealedBoard);
+          }
+
           return {
             ...state,
-            gameStatus: checkVictory(revealedBoard, state.width, state.height) ? GameStatus.Won : state.gameStatus,
             boardState: revealedBoard
           };
         }
